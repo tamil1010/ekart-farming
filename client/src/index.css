@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  
+  --color-brand-primary: #10b981; /* Emerald 500 */
+  --color-brand-secondary: #065f46; /* Emerald 800 */
+  --color-brand-dark: #064e3b; /* Emerald 900 */
+  --color-bg-main: #050505;
+  --color-bg-card: #0f1717;
+  --color-bg-surface: #1a2a26;
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-border-main: rgba(16, 185, 129, 0.1);
+}
+
+@layer base {
+  body {
+    @apply bg-[var(--color-bg-main)] text-[var(--color-text-primary)] font-sans;
+  }
+}
+
+.glass-card {
+  @apply bg-[var(--color-bg-card)] border border-[var(--color-border-main)] rounded-2xl p-6 shadow-2xl;
+  backdrop-filter: blur(12px);
+}
+
+.btn-primary {
+  @apply bg-brand-primary hover:bg-brand-secondary text-white font-medium px-4 py-2 rounded-xl transition-all duration-200 active:scale-95;
+}
+
+.input-field {
+  @apply bg-bg-surface border border-brand-dark rounded-xl px-4 py-2 text-white focus:outline-none focus:border-brand-primary transition-colors;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-content, #printable-content * {
+    visibility: visible;
+  }
+  #printable-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
