@@ -139,8 +139,8 @@ const Checkout = () => {
   const [lastOrderId, setLastOrderId] = useState(null);
  
   // Reusable field wrapper — NO white borders, only subtle green-tinted dark border
-  const fieldClass = "group space-y-2 bg-brand-primary/5 border border-brand-primary/15 p-5 rounded-2xl hover:border-brand-primary/40 focus-within:border-brand-primary/60 transition-all";
-  const fieldClassReadOnly = "group space-y-2 bg-brand-primary/5 border border-brand-primary/15 p-5 rounded-2xl opacity-50";
+  const fieldClass = "group space-y-2 bg-brand-primary/5 border border-emerald-500/40 p-5 rounded-2xl hover:border-emerald-500 focus-within:border-emerald-500 transition-all";
+  const fieldClassReadOnly ="group space-y-2 bg-brand-primary/5 border border-emerald-500/30 p-5 rounded-2xl opacity-60";
  
   if (isSuccess) {
     return (
@@ -193,7 +193,7 @@ const Checkout = () => {
  
           {/* ── Delivery Details Card ── */}
           <div className="card-terminal space-y-8">
-            <h2 className="text-xl font-bold text-text-primary flex items-center gap-2 border-b border-brand-primary/10 pb-4">
+            <h2 className="text-xl font-bold text-text-primary flex items-center gap-2 border-b border-emerald-500/20 pb-4">
               <User className="w-5 h-5 text-brand-primary" /> Delivery Details
             </h2>
  
@@ -206,7 +206,7 @@ const Checkout = () => {
                   <User className="w-4 h-4 text-brand-primary/60" />
                   <input
                     type="text"
-                    className="w-full bg-transparent text-text-primary text-sm outline-none placeholder:text-text-muted/50"
+                    className="input-field w-full text-sm"
                     placeholder="John Doe"
                     value={formData.fullName || ''}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
@@ -222,7 +222,7 @@ const Checkout = () => {
                   <Mail className="w-4 h-4 text-brand-primary/60" />
                   <input
                     type="email"
-                    className="w-full bg-transparent text-text-primary text-sm outline-none placeholder:text-text-muted/50"
+                    className="input-field w-full text-sm"
                     placeholder="john@example.com"
                     value={formData.email || ''}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -240,7 +240,7 @@ const Checkout = () => {
                   </div>
                   <input
                     type="tel"
-                    className="w-full bg-transparent text-text-primary text-sm outline-none placeholder:text-text-muted/50"
+                    className="input-field w-full text-sm"
                     placeholder="9876543210"
                     value={(formData.phone || '').replace(/^\+91\s*/, '')}
                     onChange={(e) => {
@@ -267,7 +267,7 @@ const Checkout = () => {
                         className={`flex items-center gap-3 p-4 rounded-2xl border transition-all ${
                           isActive
                             ? 'bg-brand-primary/10 border-brand-primary text-brand-primary shadow-[0_0_15px_rgba(34,197,94,0.1)]'
-                            : 'bg-brand-primary/5 border-brand-primary/15 text-text-secondary hover:border-brand-primary/30'
+                            : 'bg-brand-primary/5 border-emerald-500/30 text-text-secondary hover:border-emerald-500'
                         }`}
                       >
                         <Icon className={`w-4 h-4 ${isActive ? 'text-brand-primary' : 'text-text-muted'}`} />
@@ -293,7 +293,7 @@ const Checkout = () => {
                       <MapPin className="w-4 h-4 text-brand-primary/60" />
                       <input
                         type="text"
-                        className="w-full bg-transparent text-text-primary text-sm outline-none placeholder:text-text-muted/50"
+                        className="input-field w-full text-sm"
                         placeholder="e.g. Summer House, Farm Gate 2..."
                         value={formData.otherLocationName || ''}
                         onChange={(e) => setFormData({ ...formData, otherLocationName: e.target.value })}
@@ -311,7 +311,7 @@ const Checkout = () => {
                   <MapPin className="w-4 h-4 text-brand-primary/60" />
                   <input
                     type="text"
-                    className="w-full bg-transparent text-text-primary text-sm outline-none placeholder:text-text-muted/50"
+                    className="input-field w-full text-sm"
                     placeholder="House No, Street, Area..."
                     value={formData.address || ''}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
@@ -327,7 +327,7 @@ const Checkout = () => {
                 <div className={fieldClass}>
                   <label className="text-[10px] font-bold uppercase tracking-wider text-text-muted group-focus-within:text-brand-primary">City</label>
                   <select
-                    className="w-full bg-transparent text-text-primary text-sm outline-none cursor-pointer"
+                    className="input-field w-full text-sm cursor-pointer"
                     value={formData.city || ''}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                     required
@@ -343,7 +343,7 @@ const Checkout = () => {
                   <label className="text-[10px] font-bold uppercase tracking-wider text-text-muted">State</label>
                   <input
                     type="text"
-                    className="w-full bg-transparent text-text-primary text-sm outline-none"
+                    className="input-field w-full text-sm"
                     value="Tamil Nadu"
                     readOnly
                   />
@@ -354,7 +354,7 @@ const Checkout = () => {
                   <label className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Pincode</label>
                   <input
                     type="text"
-                    className="w-full bg-transparent text-text-primary text-sm outline-none"
+                    className="input-field w-full text-sm"
                     value={formData.pincode || ''}
                     readOnly
                     required
@@ -366,7 +366,7 @@ const Checkout = () => {
                   <label className="text-[10px] font-bold uppercase tracking-wider text-text-muted">Country</label>
                   <input
                     type="text"
-                    className="w-full bg-transparent text-text-primary text-sm outline-none"
+                    className="input-field w-full text-sm"
                     value="India"
                     readOnly
                   />
@@ -378,7 +378,7 @@ const Checkout = () => {
  
           {/* ── Payment Method Card ── */}
           <div className="card-terminal space-y-6">
-            <h2 className="text-xl font-bold text-text-primary flex items-center gap-2 border-b border-brand-primary/10 pb-4">
+            <h2 className="text-xl font-bold text-text-primary flex items-center gap-2 border-b border-emerald-500/20 pb-4">
               <CreditCard className="w-5 h-5 text-brand-primary" /> Payment Method
             </h2>
  
@@ -389,7 +389,7 @@ const Checkout = () => {
                   className={`flex items-center gap-4 p-5 rounded-2xl border transition-all cursor-pointer ${
                     formData.paymentMethod === method
                       ? 'border-brand-primary bg-brand-primary/10'
-                      : 'border-brand-primary/15 bg-brand-primary/5 hover:border-brand-primary/30 text-text-primary'
+                      : 'border-emerald-500/30 bg-brand-primary/5 hover:border-brand-primary/30 text-text-primary'
                   }`}
                 >
                   <input
@@ -417,7 +417,7 @@ const Checkout = () => {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="p-6 bg-bg-surface rounded-2xl border border-brand-primary/15 space-y-4 overflow-hidden"
+                  className="p-6 bg-bg-surface rounded-2xl border border-emerald-500/30 space-y-4 overflow-hidden"
                 >
                   <h3 className="font-bold text-sm">UPI Payment Details</h3>
                   <div className="space-y-2">
@@ -439,7 +439,7 @@ const Checkout = () => {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="p-6 bg-bg-surface rounded-2xl border border-brand-primary/15 space-y-4 overflow-hidden"
+                  className="p-6 bg-bg-surface rounded-2xl border border-emerald-500/30 space-y-4 overflow-hidden"
                 >
                   <h3 className="font-bold text-sm mb-2">Card Details</h3>
                   <div className="space-y-4">
@@ -487,7 +487,7 @@ const Checkout = () => {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="p-6 bg-bg-surface rounded-2xl border border-brand-primary/15 space-y-4 overflow-hidden"
+                  className="p-6 bg-bg-surface rounded-2xl border border-emerald-500/30 space-y-4 overflow-hidden"
                 >
                   <h3 className="font-bold text-sm mb-2">Select Bank</h3>
                   <select
@@ -523,7 +523,7 @@ const Checkout = () => {
       {/* ── Order Summary ── */}
       <div className="lg:col-span-1">
         <div className="card-terminal sticky top-24">
-          <h2 className="text-xl font-bold text-text-primary mb-6 flex items-center gap-2 border-b border-brand-primary/10 pb-4">
+          <h2 className="text-xl font-bold text-text-primary mb-6 flex items-center gap-2 border-b border-emerald-500/20 pb-4">
             Order Summary
           </h2>
           <div className="space-y-4">
@@ -539,7 +539,7 @@ const Checkout = () => {
               <span className="text-text-muted font-bold uppercase text-[10px] tracking-wider">Tax (5%)</span>
               <span className="font-bold text-text-primary">₹{Math.round(activeTotal * 0.05)}</span>
             </div>
-            <div className="pt-6 mt-4 border-t border-brand-primary/10">
+            <div className="pt-6 mt-4 border-t border-emerald-500/20">
               <div className="flex justify-between items-center text-2xl font-black text-brand-primary">
                 <span>Total Cost</span>
                 <span>₹{grandTotal}</span>

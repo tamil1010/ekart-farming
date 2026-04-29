@@ -128,65 +128,65 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Fresh Spotlight - Tomato Focus */}
-      <section className="bg-bg-card border border-white/5 rounded-[2rem] overflow-hidden p-8 md:p-12 relative group">
-        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-          <Sprout className="w-40 h-40 text-brand-primary" />
-        </div>
+      {/* Fresh Spotlight - Tomato Focus
+      // <section className="bg-bg-card border border-white/5 rounded-[2rem] overflow-hidden p-8 md:p-12 relative group">
+      //   <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+      //     <Sprout className="w-40 h-40 text-brand-primary" />
+      //   </div>
         
-        <div className="flex flex-col md:flex-row gap-12 items-center relative z-10">
-          <div 
-            onClick={() => {
-              const tomato = products.find(p => p.name === 'Fresh Farm Tomatoes');
-              if (tomato) navigate(`/product/${tomato._id}`);
-            }}
-            className="w-full md:w-[300px] h-[300px] rounded-2xl overflow-hidden shadow-2xl border border-white/10 group-hover:border-brand-primary/40 transition-all duration-500 cursor-pointer shrink-0"
-          >
-             <img 
-              src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=800" 
-              alt="Fresh Tomatoes" 
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[3s]"
-              referrerPolicy="no-referrer"
-             />
-          </div>
+      //   <div className="flex flex-col md:flex-row gap-12 items-center relative z-10">
+      //     <div 
+      //       onClick={() => {
+      //         const tomato = products.find(p => p.name === 'Fresh Farm Tomatoes');
+      //         if (tomato) navigate(`/product/${tomato._id}`);
+      //       }}
+      //       className="w-full md:w-[300px] h-[300px] rounded-2xl overflow-hidden shadow-2xl border border-white/10 group-hover:border-brand-primary/40 transition-all duration-500 cursor-pointer shrink-0"
+      //     >
+      //        <img 
+      //         src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=800" 
+      //         alt="Fresh Tomatoes" 
+      //         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[3s]"
+      //         referrerPolicy="no-referrer"
+      //        />
+      //     </div>
           
-          <div className="flex-1 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-primary/10 border border-brand-primary/20 rounded-full text-[10px] font-black text-brand-primary uppercase tracking-[0.2em]">
-               Direct from Farm
-            </div>
-            <h2 
-              onClick={() => {
-                const tomato = products.find(p => p.name === 'Fresh Farm Tomatoes');
-                if (tomato) navigate(`/product/${tomato._id}`);
-              }}
-              className="text-5xl font-black text-white tracking-tighter cursor-pointer hover:text-brand-primary transition-colors"
-            >
-              Organic <span className="text-brand-primary">Red Tomatoes</span>
-            </h2>
-            <p className="text-text-secondary text-sm leading-relaxed max-w-xl font-medium">
-              Harvested at peak ripeness, our tomatoes are grown without synthetic pesticides. Experience the rich, earthy flavor of true farm-fresh produce delivered directly to your node.
-            </p>
-            <div className="flex items-center gap-6 pt-4">
-               <div>
-                  <span className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-1">Unit Weight</span>
-                  <span className="text-xl font-bold text-white tracking-tight">1.0 KG</span>
-               </div>
-               <div className="h-10 w-px bg-white/10" />
-               <div>
-                  <span className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-1">Price Point</span>
-                  <span className="text-xl font-bold text-brand-primary tracking-tight">₹40.00</span>
-               </div>
-               <button 
-                onClick={handleOrderNow}
-                className="ml-auto bg-brand-primary hover:bg-brand-secondary text-bg-main font-black px-10 py-4 rounded-xl text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-brand-primary/20 flex items-center gap-2"
-               >
-                  Order Now
-                  <ShoppingCart className="w-4 h-4" />
-               </button>
-            </div>
-          </div>
-        </div>
-      </section>
+      //     <div className="flex-1 space-y-6">
+      //       <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-primary/10 border border-brand-primary/20 rounded-full text-[10px] font-black text-brand-primary uppercase tracking-[0.2em]">
+      //          Direct from Farm
+      //       </div>
+      //       <h2 
+      //         onClick={() => {
+      //           const tomato = products.find(p => p.name === 'Fresh Farm Tomatoes');
+      //           if (tomato) navigate(`/product/${tomato._id}`);
+      //         }}
+      //         className="text-5xl font-black text-white tracking-tighter cursor-pointer hover:text-brand-primary transition-colors"
+      //       >
+      //         Organic <span className="text-brand-primary">Red Tomatoes</span>
+      //       </h2>
+      //       <p className="text-text-secondary text-sm leading-relaxed max-w-xl font-medium">
+      //         Harvested at peak ripeness, our tomatoes are grown without synthetic pesticides. Experience the rich, earthy flavor of true farm-fresh produce delivered directly to your node.
+      //       </p>
+      //       <div className="flex items-center gap-6 pt-4">
+      //          <div>
+      //             <span className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-1">Unit Weight</span>
+      //             <span className="text-xl font-bold text-white tracking-tight">1.0 KG</span>
+      //          </div>
+      //          <div className="h-10 w-px bg-white/10" />
+      //          <div>
+      //             <span className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-1">Price Point</span>
+      //             <span className="text-xl font-bold text-brand-primary tracking-tight">₹40.00</span>
+      //          </div>
+      //          <button 
+      //           onClick={handleOrderNow}
+      //           className="ml-auto bg-brand-primary hover:bg-brand-secondary text-bg-main font-black px-10 py-4 rounded-xl text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-brand-primary/20 flex items-center gap-2"
+      //          >
+      //             Order Now
+      //             <ShoppingCart className="w-4 h-4" />
+      //          </button>
+      //       </div>
+      //     </div>
+      //   </div>
+      // </section> */}
 
       {/* Grid Display */}
       <div className="grid grid-cols-1 gap-8 max-w-6xl mx-auto">
