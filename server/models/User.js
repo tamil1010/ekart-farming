@@ -1,32 +1,28 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { 
-  type: String, 
-  enum: ['customer', 'seller'], 
-  default: 'customer' 
-},
-  phone: String,
-  address: String
+  role: { type: String, enum: ['CUSTOMER', 'SELLER', 'ADMIN'], default: 'CUSTOMER' },
+  avatar: { type: String },
+  phone: { type: String },
+  address: {
+    street: String,
+    city: String,
+    state: String,
+    pincode: String,
+  }
 }, { timestamps: true });
 
-// 🔐 hash password before save
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+userSchema.pre('save', async function() {
+  if (!this.isModified('password')) return;
+  this.password = await bcrypt.hash(this.password, 10);
 });
 
-// 🔐 compare password
-userSchema.methods.matchPassword = async function(enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
+userSchema.methods.comparePassword = async function(candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// ✅ THIS LINE IS CRITICAL
-module.exports = mongoose.model('User', userSchema);
-// console.log("User model loaded");
+export const User = mongoose.model('User', userSchema);
