@@ -443,7 +443,7 @@ const OrderDetails = () => {
                  <div className="border-[6px] border-black p-8 relative">
                    <div className="flex justify-between items-start mb-8 border-b-4 border-black pb-8">
                      <div>
-                       <h1 className="text-5xl font-black uppercase tracking-tighter leading-none">eKart Farming</h1>
+                       <h1 className="text-5xl font-black uppercase tracking-tighter leading-none">AgroMart </h1>
                        <p className="text-sm font-bold uppercase tracking-[0.3em] text-gray-600 mt-2">Logistics & Supply Chain Hub</p>
                      </div>
                      <div className="text-right">

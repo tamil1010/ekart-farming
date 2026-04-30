@@ -96,7 +96,7 @@ const Register = () => {
             <input 
               type="email" 
               className="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 text-text-primary text-sm focus:border-brand-primary outline-none transition-all placeholder:text-text-muted" 
-              placeholder="example@acm.com" 
+              placeholder="example@gmail.com" 
               value={formData.email}
               onChange={(e) => setFormData({...formData, email: e.target.value})}
               required 

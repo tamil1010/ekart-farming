@@ -62,7 +62,7 @@ const AppContent = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-bg-main flex items-center justify-center">
-        <div className="text-brand-primary animate-pulse font-display text-xl">Initializing Ekart...</div>
+        <div className="text-brand-primary animate-pulse font-display text-xl">Initializing AgroMart...</div>
       </div>
     );
   }
@@ -137,7 +137,7 @@ const AppContent = () => {
         </main>
       </div>
       <footer className="bg-bg-card border-t border-brand-dark/20 py-8 px-4 text-center text-text-secondary text-sm">
-        <p>&copy; 2026 Ekart Farming - Your Premium Agricultural Network.</p>
+        <p>&copy; 2026 AgroMart - Your Premium Agricultural Network.</p>
       </footer>
     </div>
   );

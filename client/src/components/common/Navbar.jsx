@@ -37,7 +37,7 @@ const Navbar = ({ onLogoClick }) => {
               </div>
             </div>
             <div className="flex flex-col">
-              <span className="font-sans font-black text-4xl tracking-tighter text-white leading-none">Ekart<span className="text-brand-primary italic">Farming</span></span>
+              <span className="font-sans font-black text-4xl tracking-tighter text-white leading-none">AgroMart<span className="text-brand-primary italic">Farming</span></span>
             </div>
           </Link>
         </div>

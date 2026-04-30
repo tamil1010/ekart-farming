@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProductCard from '../../components/customer/ProductCard.jsx';
-import { Search, Filter, TrendingUp, Sprout, ShoppingCart } from 'lucide-react';
-import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
+import { Search } from 'lucide-react';
+import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { useData } from '../../context/DataContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useCart } from '../../context/CartContext.jsx';
+import { useSpring } from 'framer-motion';
 
 const Home = () => {
   const { user } = useAuth();
@@ -23,18 +24,17 @@ const Home = () => {
     }
   }, [user, navigate]);
 
-  const handleOrderNow = () => {
-    const tomato = products.find(p => p.name === 'Fresh Farm Tomatoes');
-    if (tomato) {
-      addToCart(tomato);
-    }
-  };
-
   // Hero 3D Tilt
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  const heroRotateX = useTransform(mouseY, [-300, 300], [5, -5]);
-  const heroRotateY = useTransform(mouseX, [-300, 300], [-5, 5]);
+  const rawRotateX = useTransform(mouseY, [-300, 300], [8, -8]);
+  const rawRotateY = useTransform(mouseX, [-300, 300], [-8, 8]);
+  
+  const heroRotateX = useSpring(rawRotateX, { stiffness: 80, damping: 20 });
+  const heroRotateY = useSpring(rawRotateY, { stiffness: 80, damping: 20 });
+
+  const textX = useTransform(mouseX, [-300, 300], [-20, 20]);
+  const textY = useTransform(mouseY, [-300, 300], [-20, 20]); 
 
   const handleHeroMouseMove = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -58,138 +58,52 @@ const Home = () => {
   });
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-12 perspective-[1200px]">
       {/* Hero Section */}
-      <section 
-        className="relative h-[600px] rounded-[2rem] overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/5"
-      >
+      <motion.section
+  onMouseMove={handleHeroMouseMove}
+  onMouseLeave={handleHeroMouseLeave}
+  style={{ rotateX: heroRotateX, rotateY: heroRotateY }}
+  className="relative h-[600px] rounded-[2rem] overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/5 transform-gpu [transform-style:preserve-3d]"
+>
         <div className="w-full h-full relative">
           <video 
             autoPlay 
             muted 
             loop 
             playsInline
-            className="absolute inset-0 w-full h-full object-cover scale-110 group-hover:scale-100 transition-transform duration-[20000ms] ease-out brightness-50 contrast-125"
+            className="absolute inset-0 w-full h-full object-cover scale-105 brightness-[0.70] contrast-125 saturate-110 [transform:translateZ(-50px)]"
           >
-            <source src="https://player.vimeo.com/external/369324546.sd.mp4?s=6955a16d860d5b5b9c5123d5162a04870f7e4d8e&profile_id=164&oauth2_token_id=57447761" type="video/mp4" />
+            <source src="/farming.mp4" type="video/mp4" />
+            
           </video>
-          
-          {/* Scanline / HUD Effect */}
-          <div className="absolute inset-0 z-10 pointer-events-none opacity-20 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]" />
-          
-          <div className="absolute inset-0 bg-gradient-to-r from-bg-main via-bg-main/60 to-transparent flex flex-col justify-center px-12 md:px-20 z-10">
-            <motion.div 
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-2xl space-y-10"
-            >
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.8 }}
-                className="flex items-center gap-4"
-              >
-                <div className="inline-flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.4em] text-brand-primary bg-brand-primary/10 pl-5 pr-7 py-3 rounded-full border border-brand-primary/30 backdrop-blur-xl">
-                  <span className="flex h-2 w-2 rounded-full bg-brand-primary animate-ping" />
-                  Live Farm Feed // Zone A-01
-                </div>
-              </motion.div>
-              
-              <motion.h1 
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 1 }}
-                className="text-8xl md:text-[11rem] font-sans font-black text-white leading-[0.75] tracking-tighter mb-4"
-              >
-                Fresh <br/>
-                <span className="text-brand-primary drop-shadow-[0_0_50px_rgba(16,185,129,0.5)] inline-block">Harvest</span>
-              </motion.h1>
-              
-              <motion.p 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8, duration: 1 }}
-                className="text-xl text-text-secondary max-w-lg leading-relaxed font-black uppercase tracking-[0.25em] text-[10px] opacity-60 border-l-2 border-brand-primary/40 pl-6"
-              >
-                Decentralized agricultural intelligence. Access verified organic yield clusters across sustainable regional grids.
-              </motion.p>
+          {/* Quote Overlay */}
+          <div className="absolute top-0 left-0 z-10 p-10 md:p-16">
+          <motion.div
+            style={{ x: textX, y: textY }}
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1 }}
+            className="max-w-md"
+          >
+            <h2 className="text-white text-3xl md:text-4xl font-black leading-tight">
+              From Soil to Soul,
+              <br />
+              <span className="text-brand-primary">We Grow Trust.</span>
+            </h2>
 
-              <div className="flex gap-8 pt-6">
-                <button 
-                  onClick={() => document.getElementById('product-grid')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="btn-terminal scale-110 shadow-xl"
-                >
-                  Shop Now
-                </button>
-              </div>
-            </motion.div>
-          </div>
+            <p className="text-white/70 mt-3 text-xs tracking-wide">
+              Pure produce. Honest farmers. Stronger tomorrow.
+            </p>
+          </motion.div>
         </div>
-      </section>
-
-      {/* Fresh Spotlight - Tomato Focus
-      // <section className="bg-bg-card border border-white/5 rounded-[2rem] overflow-hidden p-8 md:p-12 relative group">
-      //   <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-      //     <Sprout className="w-40 h-40 text-brand-primary" />
-      //   </div>
-        
-      //   <div className="flex flex-col md:flex-row gap-12 items-center relative z-10">
-      //     <div 
-      //       onClick={() => {
-      //         const tomato = products.find(p => p.name === 'Fresh Farm Tomatoes');
-      //         if (tomato) navigate(`/product/${tomato._id}`);
-      //       }}
-      //       className="w-full md:w-[300px] h-[300px] rounded-2xl overflow-hidden shadow-2xl border border-white/10 group-hover:border-brand-primary/40 transition-all duration-500 cursor-pointer shrink-0"
-      //     >
-      //        <img 
-      //         src="https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=800" 
-      //         alt="Fresh Tomatoes" 
-      //         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[3s]"
-      //         referrerPolicy="no-referrer"
-      //        />
-      //     </div>
           
-      //     <div className="flex-1 space-y-6">
-      //       <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-primary/10 border border-brand-primary/20 rounded-full text-[10px] font-black text-brand-primary uppercase tracking-[0.2em]">
-      //          Direct from Farm
-      //       </div>
-      //       <h2 
-      //         onClick={() => {
-      //           const tomato = products.find(p => p.name === 'Fresh Farm Tomatoes');
-      //           if (tomato) navigate(`/product/${tomato._id}`);
-      //         }}
-      //         className="text-5xl font-black text-white tracking-tighter cursor-pointer hover:text-brand-primary transition-colors"
-      //       >
-      //         Organic <span className="text-brand-primary">Red Tomatoes</span>
-      //       </h2>
-      //       <p className="text-text-secondary text-sm leading-relaxed max-w-xl font-medium">
-      //         Harvested at peak ripeness, our tomatoes are grown without synthetic pesticides. Experience the rich, earthy flavor of true farm-fresh produce delivered directly to your node.
-      //       </p>
-      //       <div className="flex items-center gap-6 pt-4">
-      //          <div>
-      //             <span className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-1">Unit Weight</span>
-      //             <span className="text-xl font-bold text-white tracking-tight">1.0 KG</span>
-      //          </div>
-      //          <div className="h-10 w-px bg-white/10" />
-      //          <div>
-      //             <span className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-1">Price Point</span>
-      //             <span className="text-xl font-bold text-brand-primary tracking-tight">₹40.00</span>
-      //          </div>
-      //          <button 
-      //           onClick={handleOrderNow}
-      //           className="ml-auto bg-brand-primary hover:bg-brand-secondary text-bg-main font-black px-10 py-4 rounded-xl text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-brand-primary/20 flex items-center gap-2"
-      //          >
-      //             Order Now
-      //             <ShoppingCart className="w-4 h-4" />
-      //          </button>
-      //       </div>
-      //     </div>
-      //   </div>
-      // </section> */}
+          
+        </div>
+      </motion.section>
 
       {/* Grid Display */}
-      <div className="grid grid-cols-1 gap-8 max-w-6xl mx-auto">
+      <div id="product-grid" className="grid grid-cols-1 gap-8 max-w-6xl mx-auto">
         {filteredProducts.map((product, idx) => (
           <motion.div
             key={product._id || product.id}

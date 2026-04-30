@@ -69,20 +69,6 @@ const Login = () => {
           </p>
         </div>
 
-        {/* Social Authentication (Visual Only) */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
-           <button className="flex items-center justify-center gap-2 py-2.5 px-4 bg-white/5 border border-white/10 rounded-xl text-sm font-bold text-white hover:bg-white/10 transition-all cursor-not-allowed opacity-80">
-              <span className="text-lg">𝕏</span> GitHub
-           </button>
-           <button className="flex items-center justify-center gap-2 py-2.5 px-4 bg-white/5 border border-white/10 rounded-xl text-sm font-bold text-white hover:bg-white/10 transition-all cursor-not-allowed opacity-80">
-              <span className="text-lg text-red-500">G</span> Google
-           </button>
-        </div>
-
-        <div className="relative mb-8">
-           <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
-           <div className="relative flex justify-center text-[10px] font-black uppercase tracking-[0.2em]"><span className="bg-bg-card px-4 text-text-muted">Or continue with</span></div>
-        </div>
 
         {error && (
           <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-xs font-bold flex items-center gap-3">
@@ -99,7 +85,7 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-black/40 border border-white/10 rounded-xl py-3 px-4 text-text-primary text-sm focus:border-brand-primary outline-none transition-all placeholder:text-text-muted"
-              placeholder="m@example.com"
+              placeholder="m@gmail.com"
               required
             />
           </div>
