@@ -1,1 +1,0 @@
-function e(e){if(!e)return`N/A`;let t=new Date(e);return isNaN(t.getTime())?`Invalid Date`:new Intl.DateTimeFormat(`en-IN`,{day:`numeric`,month:`short`,year:`numeric`}).format(t)}export{e as t};
