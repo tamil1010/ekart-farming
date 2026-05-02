@@ -1,4 +1,4 @@
-# 🛒 eKart Farming – Full Stack E-Commerce Platform
+# 🛒 AgroMart Farming 
 
 eKart Farming is a full-stack web application built using the MERN stack, designed to simulate a modern agricultural e-commerce platform. It enables users to browse products, place orders, manage carts, and track transactions, while providing admin and seller dashboards for managing inventory, orders, and analytics.
 The project emphasizes clean UI/UX, structured backend APIs, and seamless frontend-backend integration.
