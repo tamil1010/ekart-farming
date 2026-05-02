@@ -5,7 +5,8 @@ import mongoose from 'mongoose';
 import path from 'path';
 import jwt from 'jsonwebtoken';
 import { fileURLToPath } from 'url';
-
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs'; // ✅ add this at the top
 
 //import { createServer as createViteServer } from 'vite';
 
@@ -22,7 +23,6 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-import { mockUsers } from './mockStore.js';
 
 async function startServer() {
   const app = express();
@@ -31,7 +31,7 @@ async function startServer() {
   // MongoDB Connection
   const mongoUri = process.env.MONGODB_URI;
   if (!mongoUri) {
-    console.warn('MONGODB_URI not found in environment. Backend will run with in-memory storage for auth.');
+    console.warn('MongoDB not connected. Auth system will not work properly.');
   } else {
     try {
       await mongoose.connect(mongoUri);
@@ -45,7 +45,92 @@ async function startServer() {
   app.use(cors());
   app.use(express.json());
 
-  // --- Auth API ---
+  // --- password reset token generation ---
+  
+
+app.post('/api/auth/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.send({ message: 'If an account exists, a reset link has been sent.' });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+    // ✅ Use updateOne to skip pre-save bcrypt hook
+    await User.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          resetPasswordToken: hashedToken,
+          resetPasswordExpire: new Date(Date.now() + 3600000)
+        }
+      }
+    );
+
+    const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+    const resetUrl = `${clientUrl}/reset-password/${resetToken}`;
+    console.log("RESET LINK:", resetUrl);
+
+    res.send({
+      message: 'If an account exists, a reset link has been sent.',
+      dev_debug_link: resetUrl
+    });
+
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    res.status(500).send({ error: 'Failed to generate reset link' });
+  }
+});
+
+app.post('/api/auth/reset-password/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    console.log('Reset token received:', token); // debug
+
+    if (!password || password.length < 6) {
+      return res.status(400).send({ error: 'Password must be at least 6 characters' });
+    }
+
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    console.log('Hashed token to search:', hashedToken); // debug
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: { $gt: new Date() } // ✅ use new Date() not Date.now()
+    });
+
+    console.log('User found:', user ? user.email : 'NOT FOUND'); // debug
+
+    if (!user) {
+      return res.status(400).send({ error: 'Invalid or expired token' });
+    }
+
+    // ✅ Hash password manually, then use updateOne to avoid double-hashing
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await User.updateOne(
+      { _id: user._id },
+      {
+        $set: { password: hashedPassword },
+        $unset: { resetPasswordToken: "", resetPasswordExpire: "" }
+      }
+    );
+
+    res.send({ message: 'Password reset successful' });
+
+  } catch (err) {
+    console.error('Reset password error:', err);
+    res.status(500).send({ error: 'Reset failed' });
+  }
+});
+
+// --- Auth API ---
   app.post('/api/auth/register', async (req, res) => {
     try {
       const { name, email, password, role } = req.body;
@@ -54,24 +139,7 @@ async function startServer() {
       if (mongoose.connection.readyState === 1) {
         newUser = new User(req.body);
         await newUser.save();
-      } else {
-        // Check if user already exists in mock
-        const existingMockUser = mockUsers.find(u => u.email === email);
-        if (existingMockUser) {
-          return res.status(400).send({ error: 'User already exists with this email' });
-        }
-        
-        newUser = {
-          _id: Math.random().toString(36).substr(2, 9),
-          name,
-          email,
-          password, 
-          role: role || 'CUSTOMER',
-          createdAt: new Date().toISOString()
-        };
-        mockUsers.push(newUser);
-      }
-
+      } 
       const token = jwt.sign({ _id: newUser._id.toString() }, process.env.JWT_SECRET || 'your_super_secret_jwt_key_here');
       
       const userResponse = (newUser && typeof newUser.toObject === 'function') ? newUser.toObject() : { ...newUser };
@@ -101,10 +169,7 @@ async function startServer() {
       } 
       
       // Fallback to mock users if not found in DB or DB not connected
-      if (!user) {
-        user = mockUsers.find(u => u.email === email && u.password === password);
-      }
-
+      
       if (!user) {
         return res.status(401).send({ error: 'Invalid login credentials' });
       }

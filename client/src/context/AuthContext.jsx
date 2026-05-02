@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
+axios.defaults.baseURL = "http://localhost:3000";
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -51,6 +53,20 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+
+  const forgotPassword = async (email) => {
+    const res = await axios.post('/api/auth/forgot-password', { email });
+    return res.data;
+  };
+
+  const resetPassword = async (token, password) => {
+    const res = await axios.post(
+      `/api/auth/reset-password/${token}`,
+      { password }
+    );
+    return res.data;
+  };
+
   const updateUserProfile = async (updates) => {
     try {
       const res = await axios.patch('/api/auth/profile', updates);
@@ -63,7 +79,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUserProfile }}>
+    <AuthContext.Provider value={{ 
+    user, 
+    loading, 
+    login, 
+    register, 
+    logout, 
+    forgotPassword,     // 🔥 ADD THIS
+    resetPassword,      // 🔥 ALSO ADD THIS
+    updateUserProfile 
+    }}>
       {children}
     </AuthContext.Provider>
   );

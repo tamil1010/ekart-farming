@@ -93,7 +93,12 @@ const Login = () => {
           <div className="space-y-2">
             <div className="flex justify-between items-center px-1">
                <label className="text-xs font-bold text-text-primary">Password</label>
-               <Link to="#" className="text-[10px] font-bold text-text-muted hover:text-white">Forgot password?</Link>
+               <Link 
+                to="/forgot-password" 
+                className="text-[10px] font-bold text-text-muted hover:text-white transition-colors"
+               >
+                 Forgot password?
+               </Link>
             </div>
             <input
               type="password"

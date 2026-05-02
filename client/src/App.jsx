@@ -14,6 +14,8 @@ import Sidebar from './components/common/Sidebar.jsx';
 import Placeholder from './pages/common/Placeholder.jsx';
 import BrandIntro from './components/common/BrandIntro.jsx';
 import { motion, AnimatePresence } from 'framer-motion';
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 
 // Lazy load pages
 const Login = React.lazy(() => import('./pages/auth/Login.jsx').catch(() => ({ default: () => <Placeholder title="Login Page" /> })));
@@ -131,6 +133,9 @@ const AppContent = () => {
                   <Route path="/admin/products" element={<AdminProducts />} />
                   <Route path="/admin/orders" element={<AdminOrders />} />
                 </Route>
+
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password/:token" element={<ResetPassword />} />
               </Routes>
             </React.Suspense>
           </div>
