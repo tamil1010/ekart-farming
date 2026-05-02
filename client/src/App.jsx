@@ -58,7 +58,7 @@ const AppContent = () => {
   const [showIntro, setShowIntro] = React.useState(true);
   
   React.useEffect(() => {
-    const savedTheme = localStorage.getItem('ekart-theme') || 'organic';
+    const savedTheme = localStorage.getItem('theme') || 'organic';
     document.documentElement.setAttribute('data-theme', savedTheme);
   }, []);
   if (loading) {

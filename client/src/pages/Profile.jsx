@@ -26,6 +26,7 @@ import {
   Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import SystemPrefs from "../components/common/SystemPrefs";
 
 const Profile = () => {
   const { user, logout, updateUserProfile } = useAuth();
@@ -304,8 +305,9 @@ const Profile = () => {
               { id: 'personal', label: 'Personal Info', icon: User },
               ...(user?.role?.toLowerCase() !== 'seller' ? [
                 { id: 'addresses', label: 'My Addresses', icon: MapPin },
-                { id: 'activity', label: 'Order History', icon: Package },
+                { id: 'activity', label: 'Order History', icon: Package }
               ] : []),
+              { id: 'system', label: 'System Params', icon: Settings }, // ✅ ADD THIS
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -337,6 +339,23 @@ const Profile = () => {
         {/* Content Area */}
         <div className="lg:col-span-9 space-y-8">
           <AnimatePresence mode="wait">
+
+            {activeTab === 'system' && (
+              <motion.div 
+                key="system"
+                initial={{ x: 20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -20, opacity: 0 }}
+                className="glass-card p-8 sm:p-12"
+              >
+                <h2 className="text-2xl font-black text-white uppercase tracking-tight mb-8">
+                  System <span className="text-brand-primary">Parameters _</span>
+                </h2>
+
+                <SystemPrefs />
+              </motion.div>
+            )}
+
             {activeTab === 'personal' && (
               <motion.div 
                 key="personal"
