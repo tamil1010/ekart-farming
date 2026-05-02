@@ -1,0 +1,1 @@
+import{n as e,r as t}from"./createLucideIcon-BkE7qnuN.js";import{p as n}from"./index-dSn2X5w8.js";t();var r=e(),i=()=>(0,r.jsx)(n,{title:`Admin Dashboard`});export{i as default};
