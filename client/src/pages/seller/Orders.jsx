@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { 
   Search, 
-  Filter, 
   Eye, 
   CheckCircle2, 
   XCircle, 
   Truck, 
-  ChevronRight,
   ShoppingBag,
   Calendar,
   Trash2
@@ -19,31 +17,22 @@ import { formatDate } from '../../lib/utils';
 const Orders = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { orders, updateOrderStatus, deleteOrder, claimInitialProducts, products } = useData();
+  const { orders, updateOrderStatus, deleteOrder, fetchOrders } = useData();
   const [activeTab, setActiveTab] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const currentUserId = user?._id || user?.id;
-
-  // Auto-claim mock data for new sellers to improve demo experience
+  // ✅ Fetch seller-specific orders from DB on mount
   React.useEffect(() => {
-    const hasMockProducts = products.some(p => p.sellerId === 'mock-seller-1');
-    if (hasMockProducts && currentUserId) {
-      claimInitialProducts(currentUserId, user?.name);
-    }
-  }, [products, currentUserId, claimInitialProducts, user?.name]);
+    fetchOrders('seller');
+  }, []);
 
+  // ✅ No seller filtering needed — API already returns only this seller's orders
   const filteredOrders = orders.filter(o => {
-    // Filter by seller ID
-    const isOwner = o.items?.some(item => {
-      const sellerId = item.product?.sellerId || item.sellerId;
-      const currentUserId = user?._id || user?.id;
-      return sellerId === currentUserId;
-    });
-    if (!isOwner) return false;
-
     const matchesTab = activeTab === 'All' || o.status === activeTab;
-    const matchesSearch = (o.customer?.name?.toLowerCase() || o.customerName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) || (o._id || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      (o.customer?.name?.toLowerCase() || o.customerName?.toLowerCase() || '')
+        .includes(searchTerm.toLowerCase()) ||
+      (o._id || '').toLowerCase().includes(searchTerm.toLowerCase());
     return matchesTab && matchesSearch;
   });
 
@@ -124,15 +113,17 @@ const Orders = () => {
                     <div className="text-[11px] font-black text-white/80 truncate max-w-[180px] uppercase">
                       {order.items.map(i => i.product?.name || i.name).join(' // ')}
                     </div>
-                    <div className="text-[9px] text-text-muted font-black tracking-widest uppercase mt-1">QUANTUM: {order.items.reduce((sum, item) => sum + item.quantity, 0)} UNITS</div>
+                    <div className="text-[9px] text-text-muted font-black tracking-widest uppercase mt-1">
+                      QUANTUM: {order.items.reduce((sum, item) => sum + item.quantity, 0)} UNITS
+                    </div>
                   </td>
                   <td className="px-6 py-6">
                     <span className="font-black text-white text-lg tracking-tighter">₹{order.total}</span>
                   </td>
                   <td className="px-6 py-6">
-                     <span className={`text-[10px] font-black uppercase tracking-widest ${order.paymentStatus === 'FAILED' ? 'text-red-500' : 'text-brand-primary'}`}>
-                       {order.paymentStatus}
-                     </span>
+                    <span className={`text-[10px] font-black uppercase tracking-widest ${order.paymentStatus === 'FAILED' ? 'text-red-500' : 'text-brand-primary'}`}>
+                      {order.paymentStatus}
+                    </span>
                   </td>
                   <td className="px-6 py-6">
                     <span className={`px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-[0.15em] border border-current ${getStatusColor(order.status).replace('bg-', 'border-')}`}>
@@ -140,74 +131,76 @@ const Orders = () => {
                     </span>
                   </td>
                   <td className="px-6 py-6">
-                     <div className="flex items-center justify-center gap-3">
-                        {order.status === 'PENDING' && (
-                          <>
-                            <button 
-                              onClick={() => updateOrderStatus(order._id, 'ACCEPTED')}
-                              className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all shadow-sm" title="Accept Order"
-                            >
-                              <CheckCircle2 className="w-4 h-4" />
-                            </button>
-                            <button 
-                              onClick={() => updateOrderStatus(order._id, 'CANCELLED')}
-                              className="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-sm" title="Reject Order"
-                            >
-                              <XCircle className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
-                        {order.status === 'ACCEPTED' && (
-                           <button 
-                             onClick={() => updateOrderStatus(order._id, 'SHIPPED')}
-                             className="flex items-center gap-2 bg-blue-400/10 text-blue-400 border border-blue-400/20 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-400 hover:text-bg-main transition-all"
-                           >
-                             <Truck className="w-4 h-4" /> SHIP YIELD
-                           </button>
-                        )}
-                        {order.status === 'SHIPPED' && (
-                           <button 
-                             onClick={() => updateOrderStatus(order._id, 'OUT_FOR_DELIVERY')}
-                             className="flex items-center gap-2 bg-purple-400/10 text-purple-400 border border-purple-400/20 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-purple-400 hover:text-bg-main transition-all"
-                           >
-                             <Truck className="w-4 h-4" /> DISPATCH
-                           </button>
-                        )}
-                        {order.status === 'OUT_FOR_DELIVERY' && (
-                           <button 
-                             onClick={() => updateOrderStatus(order._id, 'DELIVERED')}
-                             className="flex items-center gap-2 bg-brand-primary/10 text-brand-primary border border-brand-primary/20 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-primary hover:text-bg-main transition-all"
-                           >
-                             <CheckCircle2 className="w-4 h-4" /> DELIVER
-                           </button>
-                        )}
-                        {order.status === 'DELIVERED' && (
-                          <div className="px-4 py-2 bg-brand-primary/10 rounded-xl text-[9px] font-black uppercase text-brand-primary tracking-widest border border-brand-primary/20">
-                            Fulfiilled
-                          </div>
-                        )}
+                    <div className="flex items-center justify-center gap-3">
+                      {order.status === 'PENDING' && (
+                        <>
+                          <button 
+                            onClick={() => updateOrderStatus(order._id, 'ACCEPTED')}
+                            className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
+                            title="Accept Order"
+                          >
+                            <CheckCircle2 className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => updateOrderStatus(order._id, 'CANCELLED')}
+                            className="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                            title="Reject Order"
+                          >
+                            <XCircle className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+                      {order.status === 'ACCEPTED' && (
                         <button 
-                          onClick={() => navigate(`/track-order/${order._id}`)}
-                          className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-text-muted flex items-center justify-center hover:text-brand-primary hover:border-brand-primary/40 transition-all"
-                          title="Track Order Journey"
+                          onClick={() => updateOrderStatus(order._id, 'SHIPPED')}
+                          className="flex items-center gap-2 bg-blue-400/10 text-blue-400 border border-blue-400/20 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-400 hover:text-bg-main transition-all"
                         >
-                          <Truck className="w-4 h-4" />
+                          <Truck className="w-4 h-4" /> SHIP YIELD
                         </button>
+                      )}
+                      {order.status === 'SHIPPED' && (
                         <button 
-                          onClick={() => navigate(`/seller/orders/${order._id}`)}
-                          className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-text-muted flex items-center justify-center hover:text-brand-primary hover:border-brand-primary/40 transition-all"
-                          title="Manage Order"
+                          onClick={() => updateOrderStatus(order._id, 'OUT_FOR_DELIVERY')}
+                          className="flex items-center gap-2 bg-purple-400/10 text-purple-400 border border-purple-400/20 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-purple-400 hover:text-bg-main transition-all"
                         >
-                          <Eye className="w-4 h-4" />
+                          <Truck className="w-4 h-4" /> DISPATCH
                         </button>
+                      )}
+                      {order.status === 'OUT_FOR_DELIVERY' && (
                         <button 
-                          onClick={() => deleteOrder(order._id)}
-                          className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-text-muted flex items-center justify-center hover:text-red-500 hover:border-red-500/40 transition-all"
-                          title="Delete Order"
+                          onClick={() => updateOrderStatus(order._id, 'DELIVERED')}
+                          className="flex items-center gap-2 bg-brand-primary/10 text-brand-primary border border-brand-primary/20 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-primary hover:text-bg-main transition-all"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <CheckCircle2 className="w-4 h-4" /> DELIVER
                         </button>
-                     </div>
+                      )}
+                      {order.status === 'DELIVERED' && (
+                        <div className="px-4 py-2 bg-brand-primary/10 rounded-xl text-[9px] font-black uppercase text-brand-primary tracking-widest border border-brand-primary/20">
+                          Fulfilled
+                        </div>
+                      )}
+                      <button 
+                        onClick={() => navigate(`/track-order/${order._id}`)}
+                        className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-text-muted flex items-center justify-center hover:text-brand-primary hover:border-brand-primary/40 transition-all"
+                        title="Track Order Journey"
+                      >
+                        <Truck className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => navigate(`/seller/orders/${order._id}`)}
+                        className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-text-muted flex items-center justify-center hover:text-brand-primary hover:border-brand-primary/40 transition-all"
+                        title="Manage Order"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => deleteOrder(order._id)}
+                        className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-text-muted flex items-center justify-center hover:text-red-500 hover:border-red-500/40 transition-all"
+                        title="Delete Order"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -217,13 +210,13 @@ const Orders = () => {
       </div>
 
       {filteredOrders.length === 0 && (
-         <div className="text-center py-20 bg-bg-card border border-brand-dark/10 rounded-3xl">
-           <div className="w-20 h-20 bg-bg-surface mx-auto rounded-full flex items-center justify-center text-text-secondary mb-6">
-              <ShoppingBag className="w-10 h-10" />
-           </div>
-           <h3 className="text-xl font-bold">No orders found</h3>
-           <p className="text-text-secondary">Try adjusting your filters or search term.</p>
-         </div>
+        <div className="text-center py-20 bg-bg-card border border-brand-dark/10 rounded-3xl">
+          <div className="w-20 h-20 bg-bg-surface mx-auto rounded-full flex items-center justify-center text-text-secondary mb-6">
+            <ShoppingBag className="w-10 h-10" />
+          </div>
+          <h3 className="text-xl font-bold">No orders found</h3>
+          <p className="text-text-secondary">Try adjusting your filters or search term.</p>
+        </div>
       )}
     </div>
   );

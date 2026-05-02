@@ -32,7 +32,12 @@ const Marketplace = () => {
   const [inlineStock, setInlineStock] = useState({});
 
   const currentUserId = user?._id || user?.id;
-  const sellerProducts = products.filter(p => p.sellerId === currentUserId);
+  const sellerProducts = products.filter(p => 
+  p.sellerId === currentUserId || 
+  p.seller === currentUserId || 
+  p.seller?._id === currentUserId ||
+  p.seller?.toString() === currentUserId
+);
 
   const handleInlineStockUpdate = (id) => {
     const newStock = inlineStock[id];
@@ -97,7 +102,7 @@ const Marketplace = () => {
     setEditingProduct(null);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const productData = {
       ...formData,
@@ -105,14 +110,22 @@ const Marketplace = () => {
       stock: Number(formData.stock)
     };
 
-    if (editingProduct) {
-      editProduct(editingProduct._id, productData);
-    } else {
-      addProduct({ ...productData, sellerId: user?._id || user?.id });
+    try {
+      if (editingProduct) {
+        await editProduct(editingProduct._id, productData);
+      } else {
+        await addProduct({
+          ...productData,
+          sellerId: currentUserId,
+          sellerName: user?.name
+        });
+      }
+      handleCloseModal();
+    } catch (err) {
+      console.error('Product save failed:', err);
+      alert(err.message || 'Failed to save product');
     }
-    handleCloseModal();
   };
-
   const handleDelete = (id, e) => {
     if (e) {
       e.preventDefault();
@@ -514,11 +527,11 @@ const Marketplace = () => {
                         value={formData.category}
                         onChange={(e) => setFormData({...formData, category: e.target.value})}
                      >
-                       <option>Fruits</option>
-                       <option>Vegetables</option>
-                       <option>Grains</option>
-                       <option>Seeds</option>
-                       <option>Dairy</option>
+                        <option style={{backgroundColor: '#0a0a0a', color: 'white'}}>Fruits</option>
+                        <option style={{backgroundColor: '#0a0a0a', color: 'white'}}>Vegetables</option>
+                        <option style={{backgroundColor: '#0a0a0a', color: 'white'}}>Grains</option>
+                        <option style={{backgroundColor: '#0a0a0a', color: 'white'}}>Seeds</option>
+                        <option style={{backgroundColor: '#0a0a0a', color: 'white'}}>Dairy</option>
                      </select>
                    </div>
                    <div className="space-y-2">
@@ -537,11 +550,11 @@ const Marketplace = () => {
                           value={formData.unit}
                           onChange={(e) => setFormData({...formData, unit: e.target.value})}
                        >
-                         <option>kg</option>
-                         <option>dozen</option>
-                         <option>liter</option>
-                         <option>5kg</option>
-                         <option>quintal</option>
+                        <option style={{backgroundColor: '#0a0a0a', color: 'white'}}>kg</option>
+                        <option style={{backgroundColor: '#0a0a0a', color: 'white'}}>dozen</option>
+                        <option style={{backgroundColor: '#0a0a0a', color: 'white'}}>liter</option>
+                        <option style={{backgroundColor: '#0a0a0a', color: 'white'}}>5kg</option>
+                        <option style={{backgroundColor: '#0a0a0a', color: 'white'}}>quintal</option>
                        </select>
                      </div>
                    </div>

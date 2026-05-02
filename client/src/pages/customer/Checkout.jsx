@@ -69,10 +69,10 @@ const Checkout = () => {
  
   const grandTotal = activeTotal + 49 + Math.round(activeTotal * 0.05);
  
-  const handlePlaceOrder = (e) => {
-    e.preventDefault();
-    setIsProcessing(true);
-    setError(null);
+  const handlePlaceOrder = async (e) => {
+  e.preventDefault();
+  setIsProcessing(true);
+  setError(null);
  
     if (formData.paymentMethod === 'UPI' && !paymentDetails.upiId) {
       setError('Please enter a valid UPI ID');
@@ -90,7 +90,8 @@ const Checkout = () => {
       return;
     }
  
-    setTimeout(async () => {
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2500));
       const isFailed = Math.random() < 0.05;
       if (isFailed && formData.paymentMethod !== 'COD') {
         setError('Payment failed. Please try again or use a different method.');
@@ -104,10 +105,10 @@ const Checkout = () => {
         customerEmail: formData.email,
         customerPhone: formData.phone,
         items: activeItems.map(item => ({
-          product: item,
-          quantity: item.quantity,
-          price: item.price
-        })),
+        product: item._id || item.id,
+        quantity: item.quantity,
+        price: item.price
+      })),
         total: grandTotal,
         subtotal: activeTotal,
         shipping: 49,
@@ -133,7 +134,11 @@ const Checkout = () => {
       } else {
         clearCart();
       }
-    }, 2500);
+    } catch (err) {
+      console.error('Order failed:', err);
+      setError(err.message || 'Failed to place order. Please try again.');
+      setIsProcessing(false);
+    }
   };
  
   const [lastOrderId, setLastOrderId] = useState(null);

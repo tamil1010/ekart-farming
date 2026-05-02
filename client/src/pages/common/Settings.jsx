@@ -43,7 +43,6 @@ const Settings = () => {
     { id: 'security', label: 'Vault Access', icon: Lock },
     { id: 'notifications', label: 'Neural Alerts', icon: Bell },
     { id: 'privacy', label: 'Stealth Mode', icon: Eye },
-    { id: 'app', label: 'System Prefs', icon: Monitor },
   ];
 
   const handleToggle = (key) => {

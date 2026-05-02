@@ -22,18 +22,22 @@ const userSchema = new mongoose.Schema({
     pincode: String,
   },
 
-  // 🔥 ADD THESE TWO LINES
   resetPasswordToken: String,
-  resetPasswordExpire: Date
+  resetPasswordExpire: Date,
+
+  // ✅ ADDED: tracks when user last logged in
+  lastLogin: {
+    type: Date,
+    default: null
+  }
 
 }, { timestamps: true });
 
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
+// ✅ FIXED: removed `next` parameter — not needed in async pre-save hooks
+userSchema.pre('save', async function() {
+  if (!this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, 10);
-  next();
 });
-
 
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);

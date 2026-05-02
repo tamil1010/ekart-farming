@@ -6,9 +6,7 @@ import path from 'path';
 import jwt from 'jsonwebtoken';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
-import bcrypt from 'bcryptjs'; // ✅ add this at the top
-
-//import { createServer as createViteServer } from 'vite';
+import bcrypt from 'bcryptjs';
 
 // Models
 import { User } from './models/User.js';
@@ -45,153 +43,165 @@ async function startServer() {
   app.use(cors());
   app.use(express.json());
 
-  // --- password reset token generation ---
-  
+  // --- Forgot Password ---
+  app.post('/api/auth/forgot-password', async (req, res) => {
+    try {
+      const { email } = req.body;
+      const user = await User.findOne({ email });
 
-app.post('/api/auth/forgot-password', async (req, res) => {
-  try {
-    const { email } = req.body;
-    const user = await User.findOne({ email });
+      if (!user) {
+        return res.send({ message: 'If an account exists, a reset link has been sent.' });
+      }
 
-    if (!user) {
-      return res.send({ message: 'If an account exists, a reset link has been sent.' });
-    }
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
 
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-
-    // ✅ Use updateOne to skip pre-save bcrypt hook
-    await User.updateOne(
-      { _id: user._id },
-      {
-        $set: {
-          resetPasswordToken: hashedToken,
-          resetPasswordExpire: new Date(Date.now() + 3600000)
+      await User.updateOne(
+        { _id: user._id },
+        {
+          $set: {
+            resetPasswordToken: hashedToken,
+            resetPasswordExpire: new Date(Date.now() + 3600000)
+          }
         }
-      }
-    );
+      );
 
-    const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
-    const resetUrl = `${clientUrl}/reset-password/${resetToken}`;
-    console.log("RESET LINK:", resetUrl);
+      const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+      const resetUrl = `${clientUrl}/reset-password/${resetToken}`;
+      console.log("RESET LINK:", resetUrl);
 
-    res.send({
-      message: 'If an account exists, a reset link has been sent.',
-      dev_debug_link: resetUrl
-    });
+      res.send({
+        message: 'If an account exists, a reset link has been sent.',
+        dev_debug_link: resetUrl
+      });
 
-  } catch (err) {
-    console.error('Forgot password error:', err);
-    res.status(500).send({ error: 'Failed to generate reset link' });
-  }
-});
-
-app.post('/api/auth/reset-password/:token', async (req, res) => {
-  try {
-    const { token } = req.params;
-    const { password } = req.body;
-
-    console.log('Reset token received:', token); // debug
-
-    if (!password || password.length < 6) {
-      return res.status(400).send({ error: 'Password must be at least 6 characters' });
+    } catch (err) {
+      console.error('Forgot password error:', err);
+      res.status(500).send({ error: 'Failed to generate reset link' });
     }
+  });
 
-    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-    console.log('Hashed token to search:', hashedToken); // debug
+  // --- Reset Password ---
+  app.post('/api/auth/reset-password/:token', async (req, res) => {
+    try {
+      const { token } = req.params;
+      const { password } = req.body;
 
-    const user = await User.findOne({
-      resetPasswordToken: hashedToken,
-      resetPasswordExpire: { $gt: new Date() } // ✅ use new Date() not Date.now()
-    });
-
-    console.log('User found:', user ? user.email : 'NOT FOUND'); // debug
-
-    if (!user) {
-      return res.status(400).send({ error: 'Invalid or expired token' });
-    }
-
-    // ✅ Hash password manually, then use updateOne to avoid double-hashing
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    await User.updateOne(
-      { _id: user._id },
-      {
-        $set: { password: hashedPassword },
-        $unset: { resetPasswordToken: "", resetPasswordExpire: "" }
+      if (!password || password.length < 6) {
+        return res.status(400).send({ error: 'Password must be at least 6 characters' });
       }
-    );
 
-    res.send({ message: 'Password reset successful' });
+      const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
-  } catch (err) {
-    console.error('Reset password error:', err);
-    res.status(500).send({ error: 'Reset failed' });
-  }
-});
+      const user = await User.findOne({
+        resetPasswordToken: hashedToken,
+        resetPasswordExpire: { $gt: new Date() }
+      });
 
-// --- Auth API ---
+      if (!user) {
+        return res.status(400).send({ error: 'Invalid or expired token' });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      await User.updateOne(
+        { _id: user._id },
+        {
+          $set: { password: hashedPassword },
+          $unset: { resetPasswordToken: "", resetPasswordExpire: "" }
+        }
+      );
+
+      res.send({ message: 'Password reset successful' });
+
+    } catch (err) {
+      console.error('Reset password error:', err);
+      res.status(500).send({ error: 'Reset failed' });
+    }
+  });
+
+  // --- Register ---
   app.post('/api/auth/register', async (req, res) => {
     try {
-      const { name, email, password, role } = req.body;
-      let newUser;
+      console.log("REQ BODY:", req.body);
 
-      if (mongoose.connection.readyState === 1) {
-        newUser = new User(req.body);
-        await newUser.save();
-      } 
-      const token = jwt.sign({ _id: newUser._id.toString() }, process.env.JWT_SECRET || 'your_super_secret_jwt_key_here');
-      
-      const userResponse = (newUser && typeof newUser.toObject === 'function') ? newUser.toObject() : { ...newUser };
+      if (mongoose.connection.readyState !== 1) {
+        return res.status(500).send({ error: "Database not connected" });
+      }
+
+      const newUser = new User(req.body);
+      await newUser.save();
+
+      const token = jwt.sign(
+        { _id: newUser._id.toString() },
+        process.env.JWT_SECRET || 'your_super_secret_jwt_key_here'
+      );
+
+      const userResponse = newUser.toObject();
       delete userResponse.password;
 
       res.status(201).send({ user: userResponse, token });
     } catch (e) {
       console.error('Registration error:', e);
-      if (e.code === 11000 || (e.name === 'MongoServerError' && e.message.includes('E11000'))) {
+      if (e.code === 11000) {
         return res.status(400).send({ error: 'User already exists with this email' });
       }
       res.status(400).send({ error: e.message || 'Registration failed' });
     }
   });
 
+  // ✅ FIX: Login now updates lastLogin in DB after successful login
   app.post('/api/auth/login', async (req, res) => {
     try {
       const { email, password } = req.body;
-      let user;
 
-      // Try database first if connected
-      if (mongoose.connection.readyState === 1) {
-        user = await User.findOne({ email });
-        if (user && !(await user.comparePassword(password))) {
-          return res.status(401).send({ error: 'Invalid password' });
-        }
-      } 
-      
-      // Fallback to mock users if not found in DB or DB not connected
-      
+      // ✅ FIX 1: Check DB connection first
+      if (mongoose.connection.readyState !== 1) {
+        return res.status(500).send({ error: 'Database not connected' });
+      }
+
+      // ✅ FIX 2: Find user by email
+      const user = await User.findOne({ email });
+
       if (!user) {
         return res.status(401).send({ error: 'Invalid login credentials' });
       }
 
-      const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET || 'your_super_secret_jwt_key_here');
-      
-      const userResponse = (user && typeof user.toObject === 'function') ? user.toObject() : { ...user };
+      // ✅ FIX 3: Verify password
+      const isMatch = await user.comparePassword(password);
+      if (!isMatch) {
+        return res.status(401).send({ error: 'Invalid password' });
+      }
+
+      // ✅ FIX 4: Update lastLogin in DB — this was MISSING before
+      await User.updateOne(
+        { _id: user._id },
+        { $set: { lastLogin: new Date() } }
+      );
+
+      const token = jwt.sign(
+        { _id: user._id.toString() },
+        process.env.JWT_SECRET || 'your_super_secret_jwt_key_here'
+      );
+
+      const userResponse = user.toObject();
       delete userResponse.password;
-      
+
       res.send({ user: userResponse, token });
     } catch (e) {
+      console.error('Login error:', e);
       res.status(400).send({ error: e.message || 'Login failed' });
     }
   });
 
+  // --- Get Current User ---
   app.get('/api/auth/me', auth, async (req, res) => {
-    // req.user is set by auth middleware
-    const userResponse = (req.user && typeof req.user.toObject === 'function') ? req.user.toObject() : { ...req.user };
+    const userResponse = req.user.toObject();
     delete userResponse.password;
     res.send(userResponse);
   });
 
+  // --- Update Profile ---
   app.patch('/api/auth/profile', auth, async (req, res) => {
     try {
       const updates = Object.keys(req.body);
@@ -202,21 +212,10 @@ app.post('/api/auth/reset-password/:token', async (req, res) => {
         return res.status(400).send({ error: 'Invalid updates!' });
       }
 
-      if (mongoose.connection.readyState === 1) {
-        updates.forEach((update) => req.user[update] = req.body[update]);
-        await req.user.save();
-      } else {
-        // Mock update
-        const userIdx = mockUsers.findIndex(u => u._id === req.user._id);
-        if (userIdx !== -1) {
-          updates.forEach((update) => {
-            mockUsers[userIdx][update] = req.body[update];
-          });
-          req.user = { ...mockUsers[userIdx] };
-        }
-      }
+      updates.forEach((update) => req.user[update] = req.body[update]);
+      await req.user.save();
 
-      const userResponse = (req.user && typeof req.user.toObject === 'function') ? req.user.toObject() : { ...req.user };
+      const userResponse = req.user.toObject();
       delete userResponse.password;
       res.send(userResponse);
     } catch (e) {
@@ -253,6 +252,7 @@ app.post('/api/auth/reset-password/:token', async (req, res) => {
       await product.save();
       res.status(201).send(product);
     } catch (e) {
+      console.error("Product create error:", e);
       res.status(400).send({ error: e.message || 'Failed to create product' });
     }
   });
@@ -268,10 +268,7 @@ app.post('/api/auth/reset-password/:token', async (req, res) => {
 
     try {
       const product = await Product.findOne({ _id: req.params.id, seller: req.user._id });
-
-      if (!product) {
-        return res.status(404).send();
-      }
+      if (!product) return res.status(404).send();
 
       updates.forEach((update) => product[update] = req.body[update]);
       await product.save();
@@ -284,11 +281,7 @@ app.post('/api/auth/reset-password/:token', async (req, res) => {
   app.delete('/api/products/:id', auth, seller, async (req, res) => {
     try {
       const product = await Product.findOneAndDelete({ _id: req.params.id, seller: req.user._id });
-
-      if (!product) {
-        return res.status(404).send();
-      }
-
+      if (!product) return res.status(404).send();
       res.send(product);
     } catch (e) {
       res.status(500).send();
@@ -322,11 +315,9 @@ app.post('/api/auth/reset-password/:token', async (req, res) => {
     try {
       const products = await Product.find({ seller: req.user._id });
       const productIds = products.map(p => p._id);
-      
       const orders = await Order.find({
         'items.product': { $in: productIds }
       }).populate('items.product').populate('customer', 'name email phone');
-      
       res.send(orders);
     } catch (e) {
       res.status(500).send();
@@ -334,38 +325,32 @@ app.post('/api/auth/reset-password/:token', async (req, res) => {
   });
 
   app.patch('/api/orders/:id/status', auth, async (req, res) => {
-    try {
-      const order = await Order.findById(req.params.id);
-      if (!order) return res.status(404).send();
-      
-      order.status = req.body.status;
-      await order.save();
-      res.send(order);
-    } catch (e) {
-      res.status(400).send({ error: e.message || 'Failed to update order status' });
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).send();
+
+    order.status = req.body.status;
+
+    // ✅ Auto-mark COD orders as PAID when delivered
+    if (req.body.status === 'DELIVERED' && order.paymentMethod === 'COD') {
+      order.paymentStatus = 'PAID';
     }
-  });
 
-  // Health
+    await order.save();
+    res.send(order);
+  } catch (e) {
+    res.status(400).send({ error: e.message || 'Failed to update order status' });
+  }
+});
+
+  // --- Health ---
   app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', message: 'eKart Backend is healthy', dbConnected: mongoose.connection.readyState === 1 });
+    res.json({
+      status: 'ok',
+      message: 'eKart Backend is healthy',
+      dbConnected: mongoose.connection.readyState === 1
+    });
   });
-
-  // Vite integration
-  // if (process.env.NODE_ENV !== 'production') {
-  //   const vite = await createViteServer({
-  //     root: path.resolve(__dirname, '../client'),
-  //     server: { middlewareMode: true },
-  //     appType: 'spa',
-  //   });
-  //   app.use(vite.middlewares);
-  // } else {
-  //   const distPath = path.join(process.cwd(), 'client/dist');
-  //   app.use(express.static(distPath));
-  //   app.get('*', (req, res) => {
-  //     res.sendFile(path.join(distPath, 'index.html'));
-  //   });
-  // }
 
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running at http://0.0.0.0:${PORT}`);
