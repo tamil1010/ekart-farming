@@ -89,16 +89,38 @@ export const DataProvider = ({ children }) => {
 
   // ✅ Update order status — saves to DB
   const updateOrderStatus = async (orderId, newStatus) => {
-    try {
-      const res = await api.patch(`/api/orders/${orderId}/status`, { status: newStatus });
-      setOrders(prev => prev.map(order =>
-        order._id === orderId ? res.data : order
-      ));
-    } catch (e) {
-      console.error('Failed to update order status:', e);
-      throw new Error(e.response?.data?.error || 'Failed to update status');
-    }
-  };
+  try {
+
+    console.log("Updating:", orderId, newStatus);
+
+    const res = await api.patch(
+      `/api/orders/${orderId}/status`,
+      { status: newStatus }
+    );
+
+    console.log("API RESPONSE:", res.data);
+
+    setOrders(prev =>
+      prev.map(order =>
+        order._id === orderId
+          ? { ...order, status: newStatus }
+          : order
+      )
+    );
+
+    await fetchOrders('seller');
+
+  } catch (e) {
+
+    console.error("STATUS UPDATE ERROR:", e);
+
+    alert(
+      e.response?.data?.error ||
+      e.message ||
+      "Failed to update order status"
+    );
+  }
+};
 
   // ✅ Add product — saves to DB
   const addProduct = async (productData) => {
